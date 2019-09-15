@@ -1,0 +1,56 @@
+baby.t.test <- function(x, mu=0, conf.level=.95) {
+	    stopifnot(length(x) >= 2)
+  	    stopifnot(0 < conf.level) & (conf.level < 1)
+  	    n <- length(x)
+  	    x.bar <- mean(x)
+ 	    s.x <- sd(x)
+  	    t <- (x.bar - mu) / (s.x / sqrt(n))
+ 	    return.list <- list() # set up r as return value
+  	    return.list$statistic <- t
+  	    return.list$parameter <- n - 1
+  	    return.list$p.value <- 2*pt(q=-abs(t), df=n-1)
+  	    alpha <- 1 - conf.level
+  	    t.for.conf.level <- -qt(p=alpha/2, df=n-1)
+  	    error.margin <- t.for.conf.level * s.x / sqrt(n)
+  	    return.list$conf.int <- c(x.bar - error.margin, x.bar + error.margin)
+  	    return.list$estimate <- x.bar
+ 	    return.list$null.value <- mu
+  	    return(return.list)
+	    }
+
+
+
+## test case
+baby.t <- baby.t.test(1:10, 5, .90)
+print(str(baby.t))
+t <- t.test(x=1:10, mu=5, conf.level=.90) # Call real t.test() to check mine.
+
+
+
+
+
+## Note: as.numeric(), below, removes names from components of t
+stopifnot(isTRUE(all.equal(baby.t$statistic,as.numeric(t$statistic))))
+stopifnot(isTRUE(all.equal(baby.t$parameter,as.numeric(t$parameter))))
+stopifnot(isTRUE(all.equal(baby.t$p.value,as.numeric(t$p.value))))
+stopifnot(isTRUE(all.equal(baby.t$conf.int,as.numeric(t$conf.int))))
+stopifnot(isTRUE(all.equal(baby.t$estimate,as.numeric(t$estimate))))
+stopifnot(isTRUE(all.equal(baby.t$null.value,as.numeric(t$null.value))))
+
+
+Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and 
+dedicated to the  proposition that all men are created equal.Now we are engaged in a great civil war, testing whether 
+that nation,or any nation so conceived and so dedicated, can long endure.We are  met on a great battle-field of that war. We have come to dedicate a portion of that field, as a final resting place for those who here gave their lives that that nation might live. It is altogether fitting and proper that we should do this.But, in a larger sense, we can not dedicate--we can not consecrate--we can not hallow--this ground. The brave men,living and dead, who struggled here, have consecrated it, far above our poor power to add or detract. The world will little note, nor long remember what we stay here, but it can never forget what they did here. It is for us the living, rather, to be dedicated here to the unfinished work which they  who fought here have thus far so nobly advanced. It is rather for us to be here dedicated to the great task remaining before us--that from these honored dead we take increased devotion to that cause for which  they gave the last full measure of devotion--that we here highly resolve that these dead shall not have died in vain--that this nation, under God, shall have a new birth of freedom--and that government of  the people, by the people, for the peop
+le, shall not perish from the earth.
+
+
+6789	jbrown  
+9123	sroukos 
+3456	chen    
+8912	jjuniper
+
+
+Emacs can be used to edit plain text files, and it is able to write in different programming languages.When using as editor, emacs can easily search,match and replace query and even regular expressions.Emacs is able to compile and run, test programs such as R. Emacs can also be a convient tool to manage files and work with multiple files.
+
+
+Exercise:Open the roster.txt in emacs, then open another window, copy the contents in roster.txt into the new window, name this new file wisconsin.txt, save it.Close the roster.txt file, in the wisconsin.txt file, change the format of the information into "lastname", "first", "email adress", "last 4 digits of id". Last, change the first letter of the email adress to the upper case. Save the file and exit emacs.
