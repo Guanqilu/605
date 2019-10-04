@@ -1,0 +1,39 @@
+---
+title: "hw2"
+author: "Guanqi Lu glu24@wisc.edu"
+date: "9/25/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Firstly, I scaled the flux of cb58 and the 100 spectrum's flux. For each spectrum, if its length is greater than or equal to cb58, I use a loop to shift cb58 from the spectrum's beginning to the end and calculate the distance between them, get the shortest distance location. Last, compare the 100 spectrum's shortest distance and find the top three shortest.   
+
+Since I didn't truncate the beginning and end of each spectrum, the result is slightly different from the professor's. The sample result provided by professor(spec-1353-53083-0579.fits) ranked 4th in my result.
+
+
+```{r}
+
+library(astro)
+cB58<-read.fitstab("cB58_Lyman_break.fit")
+cB58_len<-length(cB58[,1])
+cB58_flux = (cB58[,2] - mean(cB58[,2]))/sd(cB58[,2])
+data<-read.csv("hw2.csv",header=T)
+data$spectrumID[c(1,2,3)]
+file1<-read.fitstab("data/spec-5324-55947-0886.fits")
+file2<-read.fitstab("data/spec-5328-55982-0218.fits")
+file3<-read.fitstab("data/spec-6064-56097-0818.fits")
+plot(10^file1[,2], scale(file1[,1]), type = "l", xlab = "wavelength", ylab = "flux")
+lines(10^file1[,2][data$i[1]]:(10^file1[,2][data$i[1]]+cB58_len-1), cB58_flux, type = "l", col = "red")
+legend(8000,10,legend=c("cB58","spec-5324-55947-0886"),col=c("red","black"),lty=1:1,cex=0.8)
+plot(10^file2[,2], scale(file2[,1]), type = "l", xlab = "wavelength", ylab = "flux")
+lines(10^file2[,2][data$i[2]]:(10^file2[,2][data$i[2]]+cB58_len-1), cB58_flux, type = "l", col = "red")
+legend(8000,15,legend=c("cB58","spec-5328-55982-0218"),col=c("red","black"),lty=1:1,cex=0.8)
+plot(10^file3[,2], scale(file3[,1]), type = "l", xlab = "wavelength", ylab = "flux")
+lines(10^file3[,2][data$i[3]]:(10^file3[,2][data$i[3]]+cB58_len-1), cB58_flux, type = "l", col = "red")
+legend(8000,20,legend=c("cB58","spec-6064-56097-0818"),col=c("red","black"),lty=1:1,cex=0.8)
+
+```
+
