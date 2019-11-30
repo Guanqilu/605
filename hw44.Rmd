@@ -1,0 +1,36 @@
+---
+title: "hw4"
+author: "Guanqi Lu"
+date: "11/24/2019"
+output: html_document
+---
+##Since last time in hw2 my 0579 is not in top3, its 4th, I revised my method.
+
+
+```{r}
+rm(list = ls())
+data_directory=data
+library(astro)
+data<-read.csv("hw4best100.csv")
+CB58<-as.data.frame(read.fitstab("CB58_Lyman_break.fit"))
+CB58_wavelength = 10^CB58$LOGLAM
+CB58_flux = CB58$FLUX
+CB58 = data.frame(CB58, wavelength = CB58_wavelength)
+CB58_flux_nm = scale(CB58_flux)
+CB58_len = length(CB58_flux_nm)
+
+
+for(i in 1:10){
+specname = paste(data$spectrumID[i], sep = "")
+position = as.numeric(data$distance[i])
+spec = as.data.frame(read.fitstab(paste("data/",specname, sep = "")))
+spec$wavelength = 10^spec$loglam
+spec = spec[spec$and_mask == 0,]
+spec_flux_nm = (spec$flux - mean(spec$flux))/sd(spec$flux)
+plot(spec$wavelength, spec_flux_nm, type = "l", col = "blue", xlab = "wavelength", ylab = "flux")
+lines(spec$wavelength[position]:(spec$wavelength[position]+CB58_len-1), CB58_flux_nm, type = "l", col = "red", xlab = "wavelength", ylab = "flux")
+legend("topright", legend = c("CB58", paste(specname)), lty = c(1,1), col = c("red", "blue"))
+}
+
+```
+
