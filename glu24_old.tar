@@ -1,0 +1,75 @@
+glu24/0000775002515300251530000000000013556621375010514 5ustar  glu24glu24glu24/mtcars/0000775002515300251530000000000013556622074012002 5ustar  glu24glu24glu24/mtcars/getData.sh0000764002515300251530000000031113555700555013703 0ustar  glu24glu24#!/bin/bash
+module load R/R-3.6.1
+Rscript -e "write.csv(x=mtcars[ 1:10, ], file='mtcars1.csv'); \
+write.csv(x=mtcars[11:20, ], file='mtcars2.csv'); \
+write.csv(x=mtcars[21:32, ], file='mtcars3.csv');"
+glu24/mtcars/findLightest.sh0000764002515300251530000000012013555700555014754 0ustar  glu24glu24#!/bin/bash
+rm -rf out
+cat out1.csv out2.csv out3.csv | sort -n | head -1 >>out
+glu24/mtcars/jobArray.sh0000764002515300251530000000025113555700555014106 0ustar  glu24glu24#!/bin/bash
+n=$SLURM_ARRAY_TASK_ID
+wt_col=7
+gear_col=11
+cat mtcars$n.csv | awk -F, '$'"$gear_col"'==3 { print }' | cut -f $wt_col -d , > out$n.csv
+#produce 3 csv files
+
+glu24/mtcars/out0000664002515300251530000000000613556621707012532 0ustar  glu24glu242.465
+glu24/mtcars/submit.sh0000775002515300251530000000052613555700555013647 0ustar  glu24glu24#!/bin/bash
+
+module load R/R-3.6.1
+
+job1=$(sbatch --output="omit" getData.sh)
+job1=$(echo $job1 | sed 's/Submitted batch job //')
+
+job2=$(sbatch --array=1-3 --output="omit" --dependency=afterany:$job1 jobArray.sh)
+job2=$(echo $job2 | sed 's/Submitted batch job //')
+
+job3=$(sbatch --output="omit" --dependency=afterany:$job2 findLightest.sh)
+glu24/airlines/0000775002515300251530000000000013556621752012321 5ustar  glu24glu24glu24/airlines/average.R0000664002515300251530000000031213556621043014043 0ustar  glu24glu24allMSN = read.csv('Data/allMSN.csv')
+allMSN = allMSN[!is.na(allMSN[, 2]), ]
+avg = round(tapply(allMSN[, 2], allMSN[, 1], mean), 1)
+write.table(t(avg), 'avg.txt', sep = ' ',col.names = F, row.names = F)
+glu24/airlines/Data.sh0000764002515300251530000000045213556620261013522 0ustar  glu24glu24#!/bin/bash
+n=$(($SLURM_ARRAY_TASK_ID+1986))
+wget http://stat-computing.org/dataexpo/2009/$n.csv.bz2  -P Data
+bzip2 -d Data/$n.csv.bz2
+#DayOfWeek=4, DepDelay=16, Origin=17, Dest=18, Distance=19
+cat Data/$n.csv | cut -d, -f 4,16,17,18,19  | awk -F, '{if ($3 == "MSN") {print $0} }' > Data/MSN$n.csv
+glu24/airlines/airlines.sh0000775002515300251530000000045613556621261014466 0ustar  glu24glu24#!/bin/bash
+for file in $(ls -1 Data/MSN*.csv); do
+	    cat $file >> Data/allMSN.csv
+done
+cat Data/allMSN.csv  |cut -d, -f3,4,5 | sort -t, -k3nr | head -n1 > out
+
+module load R/R-3.6.1
+
+Rscript average.R
+#write the results to out
+echo Mo Tu We Th Fr Sa Su >> out
+echo $(cat avg.txt) >> out
+rm avg.txt
+
+glu24/airlines/makedir.sh0000764002515300251530000000016513556614235014272 0ustar  glu24glu24#!/bin/bash
+
+#clean all the other data  directory and output
+rm -rf Data
+rm -rf Out
+
+#make new datafolder
+mkdir Data
+glu24/airlines/out0000664002515300251530000000007413556621201013041 0ustar  glu24glu24MSN,LAS,1454
+Mo Tu We Th Fr Sa Su
+6.3 5 5.3 6.5 6.5 3.4 5.5
+glu24/airlines/submit.sh0000764002515300251530000000070113556613546014161 0ustar  glu24glu24#!/bin/bash
+#remove old and make new dirctory
+rm -rf Out
+mkdir Out
+
+job1=$(sbatch --output="Out/%A_%a.out" makedir.sh)
+job1=$(echo $job1 | sed 's/Submitted batch job //')
+
+job2=$(sbatch --array=1-22 --output="Out/%A_%a.out" --dependency=afterany:$job1 Data.sh)
+job2=$(echo $job2 | sed 's/Submitted batch job //')
+
+job3=$(sbatch --output="Out/%A_%a.out" --dependency=afterany:$job2 airlines.sh)			
+job3=$(echo $job3 | sed 's/Submitted batch job //')
